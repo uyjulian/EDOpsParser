@@ -13,6 +13,8 @@ namespace OpsParser
 		{
 			asset = "";
 			name = "";
+			preferredasset1 = "";
+			preferredasset2 = "";
 			pos = new double[3];
 			rot = new double[3];
 			scl = new double[3];
@@ -20,6 +22,8 @@ namespace OpsParser
 		}
 		public String asset;
 		public String name;
+		public String preferredasset1;
+		public String preferredasset2;
 		// Order is x, y, z
 		public double[] pos;
 		public double[] rot; // in normalized degrees
@@ -33,7 +37,12 @@ namespace OpsParser
 			var split = str.Replace(" ", "").Split(new char[] { ',' });
 			for (var i = 0; i < split.Length; i += 1)
 			{
-				arr[i] = double.Parse(split[i], System.Globalization.CultureInfo.InvariantCulture);
+				String split_no_period = split[i];
+				if (split_no_period.Substring(split_no_period.Length - 1, 1) == ".")
+				{
+					split_no_period = split_no_period.Substring(0, split_no_period.Length - 1);
+				}
+				arr[i] = double.Parse(split_no_period, System.Globalization.CultureInfo.InvariantCulture);
 			}
 		}
 		static void arr_rad_to_deg(double[] arr)
@@ -53,6 +62,122 @@ namespace OpsParser
 					arr[i] += 360;
 				}
 			}
+		}
+		static void process_asset_xml(OpsInfo ops_info)
+		{
+			String fn = ops_info.asset;
+			ops_info.preferredasset1 = fn;
+			// special exceptions
+			if (fn == "O_C03TBL00")
+			{
+				ops_info.preferredasset2 = "c0tbl00";
+				return;
+			}
+			if (fn == "O_C03TBL01")
+			{
+				ops_info.preferredasset2 = "c0tbl01";
+				return;
+			}
+			if (fn == "O_C03TBL02")
+			{
+				ops_info.preferredasset2 = "c0tbl02";
+				return;
+			}
+			if (fn == "O_C24DOR01")
+			{
+				ops_info.preferredasset2 = "24dor01";
+				return;
+			}
+			if (fn == "O_F30KAG28")
+			{
+				ops_info.preferredasset2 = "s30kag28";
+				return;
+			}
+			if (fn == "O_F44EVT00_GS")
+			{
+				ops_info.preferredasset2 = "f44evt_coaster_gs";
+				return;
+			}
+			if (fn == "O_M21ETC01")
+			{
+				ops_info.preferredasset2 = "m21ect01";
+				return;
+			}
+			if (fn == "O_M60EVT47")
+			{
+				ops_info.preferredasset2 = "s00evt47";
+				return;
+			}
+			if (fn == "O_R02LIG00")
+			{
+				ops_info.preferredasset2 = "o_r02lig00";
+				return;
+			}
+			if (fn == "O_S00FLS00")
+			{
+				ops_info.preferredasset2 = "light00";
+				return;
+			}
+			if (fn == "O_S00SKYW")
+			{
+				ops_info.preferredasset2 = "s00skyw_sky";
+				return;
+			}
+			if (fn == "O_S50KMO50")
+			{
+				ops_info.preferredasset2 = "s50obj50";
+				return;
+			}
+			if (fn == "O_S61KMO45B")
+			{
+				ops_info.preferredasset2 = "s61kag45b";
+				return;
+			}
+			if (fn == "O_S61KMO46")
+			{
+				ops_info.preferredasset2 = "s61kag46";
+				return;
+			}
+			if (fn == "O_T00EVT61")
+			{
+				ops_info.preferredasset2 = "t00ev61";
+				return;
+			}
+			if (fn == "O_T03EVT00")
+			{
+				ops_info.preferredasset2 = "t02evt00";
+				return;
+			}
+			if (fn == "O_T10TIG03")
+			{
+				ops_info.preferredasset2 = "t10lig03";
+				return;
+			}
+			if (fn == "O_T40KMO01")
+			{
+				ops_info.preferredasset2 = "t40lmo01";
+				return;
+			}
+			if (fn == "O_T50KMO01H")
+			{
+				ops_info.preferredasset2 = "t50kag01h";
+				return;
+			}
+			if (fn == "O_TESTRIGD")
+			{
+				ops_info.preferredasset2 = "rigidtest";
+				return;
+			}
+			if (fn == "O_V03TRN02")
+			{
+				ops_info.preferredasset2 = "v03tm02";
+				return;
+			}
+			// chop off O_
+			fn = fn.Substring(2);
+			// lowercase
+			fn = fn.ToLower();
+			ops_info.preferredasset2 = fn;
 		}
 		static void read_xml(string filename, List<OpsInfo> ops_list)
 		{
@@ -80,11 +205,25 @@ namespace OpsParser
 						opsInfo.rot[1] = -opsInfo.rot[1];
 						arr_rad_to_deg(opsInfo.rot);
 						arr_normalize_deg(opsInfo.rot);
+						process_asset_xml(opsInfo);
 						ops_list.Add(opsInfo);
 					}
 					
 				}
 			}
+		}
+		static void process_asset_ed6(OpsInfo ops_info)
+		{
+			String fn = ops_info.asset;
+			// chop off .x
+			if (fn.Length >= 2)
+			{
+				fn = fn.Substring(0, fn.Length - 2);
+			}
+			ops_info.preferredasset1 = fn;
+			// lowercase
+			fn = fn.ToLower();
+			ops_info.preferredasset2 = fn;
 		}
 		static void read_ed6(string filename, List<OpsInfo> ops_list, bool is_ed6_3)
 		{
@@ -129,6 +268,7 @@ namespace OpsParser
 					opsInfo.pos[2] = entry_floats[61];
 					opsInfo.rot[1] = entry_floats[64];
 					arr_normalize_deg(opsInfo.rot);
+					process_asset_ed6(opsInfo);
 					ops_list.Add(opsInfo);
 				}
 			}
@@ -159,6 +299,8 @@ namespace OpsParser
 				var entry = ops_list[i];
 				Console.WriteLine("Asset: " + entry.asset);
 				Console.WriteLine("Name: " + entry.name);
+				Console.WriteLine("Prefname1: " + entry.preferredasset1);
+				Console.WriteLine("Prefname2: " + entry.preferredasset2);
 				Console.WriteLine("Position: " + entry.pos[0] + " " + entry.pos[1] + " " + entry.pos[2]);
 				Console.WriteLine("Rotation: " + entry.rot[0] + " " + entry.rot[1] + " " + entry.rot[2]);
 				Console.WriteLine("Scale: " + entry.scl[0] + " " + entry.scl[1] + " " + entry.scl[2]);
