@@ -16,7 +16,7 @@ namespace OpsParser
 			preferredasset1 = "";
 			preferredasset2 = "";
 			pos = new double[3];
-			rot = new double[3];
+			rot = new double[4];
 			scl = new double[3];
 			scl[0] = scl[1] = scl[2] = 1;
 		}
@@ -52,6 +52,26 @@ namespace OpsParser
 				arr[i] = (arr[i] / (2 * Math.PI)) * 360;
 			}
 		}
+		static void arr_deg_to_rad(double[] arr)
+		{
+			for (var i = 0; i < arr.Length; i += 1)
+			{
+				arr[i] = (arr[i] / 360) * (2 * Math.PI);
+			}
+		}
+		static void arr_rad_to_quat(double[] arr)
+		{
+			var cy = Math.Cos(arr[2] * 0.5);
+			var sy = Math.Sin(arr[2] * 0.5);
+			var cp = Math.Cos(arr[1] * 0.5);
+			var sp = Math.Sin(arr[1] * 0.5);
+			var cr = Math.Cos(arr[0] * 0.5);
+			var sr = Math.Sin(arr[0] * 0.5);
+			arr[0] = cr * cp * cy + sr * sp * sy;
+			arr[1] = sr * cp * cy - cr * sp * sy;
+			arr[2] = cr * sp * cy + sr * cp * sy;
+			arr[3] = cr * cp * sy - sr * sp * cy;
+		}
 		static void arr_normalize_deg(double[] arr)
 		{
 			for (var i = 0; i < arr.Length; i += 1)
@@ -61,6 +81,13 @@ namespace OpsParser
 				{
 					arr[i] += 360;
 				}
+			}
+		}
+		static void arr_deg(double[] arr)
+		{
+			for (var i = 0; i < arr.Length; i += 1)
+			{
+				arr[i] = (arr[i] / (2 * Math.PI)) * 360;
 			}
 		}
 		static void process_asset_xml(OpsInfo ops_info)
@@ -179,7 +206,7 @@ namespace OpsParser
 			fn = fn.ToLower();
 			ops_info.preferredasset2 = fn;
 		}
-		static void read_xml(string filename, List<OpsInfo> ops_list)
+		static void read_xml(string filename, LinkedList<OpsInfo> ops_list)
 		{
 			var xml_doc = new XmlDocument();
 			xml_doc.Load(filename);
@@ -203,12 +230,101 @@ namespace OpsParser
 						opsInfo.pos[0] = -opsInfo.pos[0];
 						// reverse Y rotation
 						opsInfo.rot[1] = -opsInfo.rot[1];
-						arr_rad_to_deg(opsInfo.rot);
-						arr_normalize_deg(opsInfo.rot);
+						arr_rad_to_quat(opsInfo.rot);
 						process_asset_xml(opsInfo);
-						ops_list.Add(opsInfo);
+						ops_list.AddLast(opsInfo);
 					}
 					
+				}
+			}
+		}
+		static void read_plt(string filename, LinkedList<OpsInfo> ops_list)
+		{
+			using (var reader = new BinaryReader(File.Open(filename, FileMode.Open)))
+			{
+				// skip null bytes
+				reader.BaseStream.Seek(4, SeekOrigin.Current);
+				var count = reader.ReadUInt32();
+
+				byte[] filename_entry = new byte[32];
+				float[] mat = new float[16];
+				for (var i = 0; i < count; i += 1)
+				{
+					var objname = "";
+					reader.Read(filename_entry, 0, 32);
+					for (var j = 0; j < 32; j += 1)
+					{
+						if (filename_entry[j] == 0)
+						{
+							objname = System.Text.Encoding.ASCII.GetString(filename_entry, 0, j);
+							break;
+						}
+					}
+					var assname = "";
+					reader.Read(filename_entry, 0, 32);
+					for (var j = 0; j < 32; j += 1)
+					{
+						if (filename_entry[j] == 0)
+						{
+							assname = System.Text.Encoding.ASCII.GetString(filename_entry, 0, j);
+							break;
+						}
+					}
+					var unk1 = reader.ReadUInt32();
+					var unk2 = reader.ReadUInt32();
+					var unk3 = reader.ReadUInt32();
+					var transformcount = reader.ReadUInt32();
+					for (var j = 0; j < transformcount; j += 1)
+					{
+						for (var k = 0; k < 16; k += 1)
+						{
+							mat[k] = reader.ReadSingle();
+						}
+						var opsInfo = new OpsInfo();
+						opsInfo.asset = assname;
+						opsInfo.name = objname;
+						opsInfo.pos[0] = mat[9];
+						opsInfo.pos[1] = mat[10];
+						opsInfo.pos[2] = mat[11];
+						opsInfo.scl[0] = Math.Sqrt(Math.Pow(mat[0], 2) + Math.Pow(mat[3], 2) + Math.Pow(mat[6], 2));
+						opsInfo.scl[1] = Math.Sqrt(Math.Pow(mat[1], 2) + Math.Pow(mat[4], 2) + Math.Pow(mat[7], 2));
+						opsInfo.scl[2] = Math.Sqrt(Math.Pow(mat[2], 2) + Math.Pow(mat[5], 2) + Math.Pow(mat[8], 2));
+						var tr = mat[0] + mat[4] + mat[8];
+						if (tr > 0)
+						{
+							var S = Math.Sqrt(tr + 1.0) * 2; // S=4*qw
+							opsInfo.rot[0] = ( 0.25 * S );
+							opsInfo.rot[1] = ( (mat[7] - mat[5]) / S );
+							opsInfo.rot[2] = ( (mat[2] - mat[6]) / S );
+							opsInfo.rot[3] = ( (mat[3] - mat[1]) / S );
+						}
+						else if ((mat[0] > mat[4]) && (mat[0] > mat[8]))
+						{
+							var S = Math.Sqrt(1.0 + mat[0] - mat[4] - mat[8]) * 2; // S=4*qx
+							opsInfo.rot[0] = ( (mat[7] - mat[5]) / S );
+							opsInfo.rot[1] = ( 0.25 * S );
+							opsInfo.rot[2] = ( (mat[1] + mat[3]) / S );
+							opsInfo.rot[3] = ( (mat[2] + mat[6]) / S );
+						}
+						else if (mat[4] > mat[8])
+						{
+							var S = Math.Sqrt(1.0 + mat[4] - mat[0] - mat[8]) * 2; // S=4*qy
+							opsInfo.rot[0] = ( (mat[2] - mat[6]) / S );
+							opsInfo.rot[1] = ( (mat[1] + mat[3]) / S );
+							opsInfo.rot[2] = ( 0.25 * S );
+							opsInfo.rot[3] = ( (mat[5] + mat[7]) / S );
+						}
+						else
+						{
+							var S = Math.Sqrt(1.0 + mat[8] - mat[0] - mat[4]) * 2; // S=4*qz
+							opsInfo.rot[0] = ( (mat[3] - mat[1]) / S );
+							opsInfo.rot[1] = ( (mat[2] + mat[6]) / S );
+							opsInfo.rot[2] = ( (mat[5] + mat[7]) / S );
+							opsInfo.rot[3] = ( 0.25 * S );
+						}
+						process_asset_xml(opsInfo);
+						ops_list.AddLast(opsInfo);
+					}
 				}
 			}
 		}
@@ -225,7 +341,7 @@ namespace OpsParser
 			fn = fn.ToLower();
 			ops_info.preferredasset2 = fn;
 		}
-		static void read_ed6(string filename, List<OpsInfo> ops_list, bool is_ed6_3)
+		static void read_ed6(string filename, LinkedList<OpsInfo> ops_list, bool is_ed6_3)
 		{
 			var opslength = 312;
 			if (is_ed6_3)
@@ -267,42 +383,50 @@ namespace OpsParser
 					opsInfo.pos[1] = entry_floats[62];
 					opsInfo.pos[2] = entry_floats[61];
 					opsInfo.rot[1] = entry_floats[64];
-					arr_normalize_deg(opsInfo.rot);
+					arr_deg_to_rad(opsInfo.rot);
+					arr_rad_to_quat(opsInfo.rot);
 					process_asset_ed6(opsInfo);
-					ops_list.Add(opsInfo);
+					ops_list.AddLast(opsInfo);
 				}
 			}
 		}
 		static void Main(string[] args)
 		{
-			List<OpsInfo> ops_list = new List<OpsInfo>();
+			var path = args[0];
+
+			LinkedList<OpsInfo> ops_list = new LinkedList<OpsInfo>();
 			var is_xml = false;
+			var is_plt = false;
 			var is_ed6_3 = false;
-			using (var reader = new BinaryReader(File.Open(args[0], FileMode.Open)))
+			using (var reader = new BinaryReader(File.Open(path, FileMode.Open)))
 			{
 				var ident = reader.ReadUInt32();
 				is_xml = ident == 0x3CBFBBEF;
+				is_plt = ident == 0x00000000;
 				is_ed6_3 = ident == 0x41364445;
 			}
 			
 			if (is_xml)
 			{
-				read_xml(args[0], ops_list);
+				read_xml(path, ops_list);
+			}
+			else if (is_plt)
+			{
+				read_plt(path, ops_list);
 			}
 			else
 			{
-				read_ed6(args[0], ops_list, is_ed6_3);
+				read_ed6(path, ops_list, is_ed6_3);
 			}
 
-			for (var i = 0; i < ops_list.Count; i += 1)
+			foreach (OpsInfo entry in ops_list)
 			{
-				var entry = ops_list[i];
 				Console.WriteLine("Asset: " + entry.asset);
 				Console.WriteLine("Name: " + entry.name);
 				Console.WriteLine("Prefname1: " + entry.preferredasset1);
 				Console.WriteLine("Prefname2: " + entry.preferredasset2);
 				Console.WriteLine("Position: " + entry.pos[0] + " " + entry.pos[1] + " " + entry.pos[2]);
-				Console.WriteLine("Rotation: " + entry.rot[0] + " " + entry.rot[1] + " " + entry.rot[2]);
+				Console.WriteLine("Rotation: " + entry.rot[0] + " " + entry.rot[1] + " " + entry.rot[2] + " " + entry.rot[3]);
 				Console.WriteLine("Scale: " + entry.scl[0] + " " + entry.scl[1] + " " + entry.scl[2]);
 			}
 		}
