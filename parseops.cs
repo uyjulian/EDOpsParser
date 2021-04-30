@@ -322,6 +322,8 @@ namespace OpsParser
 							opsInfo.rot[2] = ( (mat[6] + mat[9]) / S );
 							opsInfo.rot[3] = ( 0.25 * S );
 						}
+						// reverse X position
+						opsInfo.pos[0] = -opsInfo.pos[0];
 						process_asset_xml(opsInfo);
 						ops_list.AddLast(opsInfo);
 					}
