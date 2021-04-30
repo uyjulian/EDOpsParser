@@ -283,43 +283,43 @@ namespace OpsParser
 						var opsInfo = new OpsInfo();
 						opsInfo.asset = assname;
 						opsInfo.name = objname;
-						opsInfo.pos[0] = mat[9];
-						opsInfo.pos[1] = mat[10];
-						opsInfo.pos[2] = mat[11];
-						opsInfo.scl[0] = Math.Sqrt(Math.Pow(mat[0], 2) + Math.Pow(mat[3], 2) + Math.Pow(mat[6], 2));
-						opsInfo.scl[1] = Math.Sqrt(Math.Pow(mat[1], 2) + Math.Pow(mat[4], 2) + Math.Pow(mat[7], 2));
-						opsInfo.scl[2] = Math.Sqrt(Math.Pow(mat[2], 2) + Math.Pow(mat[5], 2) + Math.Pow(mat[8], 2));
-						var tr = mat[0] + mat[4] + mat[8];
+						opsInfo.pos[0] = mat[12];
+						opsInfo.pos[1] = mat[13];
+						opsInfo.pos[2] = mat[14];
+						opsInfo.scl[0] = Math.Sqrt(Math.Pow(mat[0], 2) + Math.Pow(mat[4], 2) + Math.Pow(mat[8], 2));
+						opsInfo.scl[1] = Math.Sqrt(Math.Pow(mat[1], 2) + Math.Pow(mat[5], 2) + Math.Pow(mat[9], 2));
+						opsInfo.scl[2] = Math.Sqrt(Math.Pow(mat[2], 2) + Math.Pow(mat[6], 2) + Math.Pow(mat[10], 2));
+						var tr = mat[0] + mat[5] + mat[10];
 						if (tr > 0)
 						{
 							var S = Math.Sqrt(tr + 1.0) * 2; // S=4*qw
 							opsInfo.rot[0] = ( 0.25 * S );
-							opsInfo.rot[1] = ( (mat[7] - mat[5]) / S );
-							opsInfo.rot[2] = ( (mat[2] - mat[6]) / S );
-							opsInfo.rot[3] = ( (mat[3] - mat[1]) / S );
+							opsInfo.rot[1] = ( (mat[9] - mat[6]) / S );
+							opsInfo.rot[2] = ( (mat[2] - mat[8]) / S );
+							opsInfo.rot[3] = ( (mat[4] - mat[1]) / S );
 						}
-						else if ((mat[0] > mat[4]) && (mat[0] > mat[8]))
+						else if ((mat[0] > mat[5]) && (mat[0] > mat[10]))
 						{
-							var S = Math.Sqrt(1.0 + mat[0] - mat[4] - mat[8]) * 2; // S=4*qx
-							opsInfo.rot[0] = ( (mat[7] - mat[5]) / S );
+							var S = Math.Sqrt(1.0 + mat[0] - mat[5] - mat[10]) * 2; // S=4*qx
+							opsInfo.rot[0] = ( (mat[9] - mat[6]) / S );
 							opsInfo.rot[1] = ( 0.25 * S );
-							opsInfo.rot[2] = ( (mat[1] + mat[3]) / S );
-							opsInfo.rot[3] = ( (mat[2] + mat[6]) / S );
+							opsInfo.rot[2] = ( (mat[1] + mat[4]) / S );
+							opsInfo.rot[3] = ( (mat[2] + mat[8]) / S );
 						}
-						else if (mat[4] > mat[8])
+						else if (mat[5] > mat[10])
 						{
-							var S = Math.Sqrt(1.0 + mat[4] - mat[0] - mat[8]) * 2; // S=4*qy
-							opsInfo.rot[0] = ( (mat[2] - mat[6]) / S );
-							opsInfo.rot[1] = ( (mat[1] + mat[3]) / S );
+							var S = Math.Sqrt(1.0 + mat[5] - mat[0] - mat[10]) * 2; // S=4*qy
+							opsInfo.rot[0] = ( (mat[2] - mat[8]) / S );
+							opsInfo.rot[1] = ( (mat[1] + mat[4]) / S );
 							opsInfo.rot[2] = ( 0.25 * S );
-							opsInfo.rot[3] = ( (mat[5] + mat[7]) / S );
+							opsInfo.rot[3] = ( (mat[6] + mat[9]) / S );
 						}
 						else
 						{
-							var S = Math.Sqrt(1.0 + mat[8] - mat[0] - mat[4]) * 2; // S=4*qz
-							opsInfo.rot[0] = ( (mat[3] - mat[1]) / S );
-							opsInfo.rot[1] = ( (mat[2] + mat[6]) / S );
-							opsInfo.rot[2] = ( (mat[5] + mat[7]) / S );
+							var S = Math.Sqrt(1.0 + mat[10] - mat[0] - mat[5]) * 2; // S=4*qz
+							opsInfo.rot[0] = ( (mat[4] - mat[1]) / S );
+							opsInfo.rot[1] = ( (mat[2] + mat[8]) / S );
+							opsInfo.rot[2] = ( (mat[6] + mat[9]) / S );
 							opsInfo.rot[3] = ( 0.25 * S );
 						}
 						process_asset_xml(opsInfo);
