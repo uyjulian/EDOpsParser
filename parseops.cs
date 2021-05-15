@@ -19,6 +19,9 @@ namespace OpsParser
 			rot = new double[4];
 			scl = new double[3];
 			scl[0] = scl[1] = scl[2] = 1;
+			materialdiffuse = new double[4];
+			materialdiffuse[0] = materialdiffuse[1] = materialdiffuse[2] = materialdiffuse[3] = 1;
+			materialemission = new double[3];
 		}
 		public String asset;
 		public String name;
@@ -26,11 +29,13 @@ namespace OpsParser
 		public String preferredasset2;
 		// Order is x, y, z
 		public double[] pos;
-		public double[] rot; // in normalized degrees
+		public double[] rot; // in quaterion
 		public double[] scl;
+		public double[] materialdiffuse;
+		public double[] materialemission;
 	}
 
-	static class Program
+	public static class OpsParserProgram
 	{
 		static void parse_commadouble(String str, double[] arr)
 		{
@@ -226,6 +231,8 @@ namespace OpsParser
 						parse_commadouble(attr["pos"].InnerText, opsInfo.pos);
 						parse_commadouble(attr["rot"].InnerText, opsInfo.rot);
 						parse_commadouble(attr["scl"].InnerText, opsInfo.scl);
+						parse_commadouble(attr["materialDiffuse"].InnerText, opsInfo.materialdiffuse);
+						parse_commadouble(attr["materialEmission"].InnerText, opsInfo.materialemission);
 						// reverse X position
 						opsInfo.pos[0] = -opsInfo.pos[0];
 						// reverse Y rotation
@@ -430,6 +437,8 @@ namespace OpsParser
 				Console.WriteLine("Position: " + entry.pos[0] + " " + entry.pos[1] + " " + entry.pos[2]);
 				Console.WriteLine("Rotation: " + entry.rot[0] + " " + entry.rot[1] + " " + entry.rot[2] + " " + entry.rot[3]);
 				Console.WriteLine("Scale: " + entry.scl[0] + " " + entry.scl[1] + " " + entry.scl[2]);
+				Console.WriteLine("MaterialDiffuse: " + entry.materialdiffuse[0] + " " + entry.materialdiffuse[1] + " " + entry.materialdiffuse[2] + " " + entry.materialdiffuse[3]);
+				Console.WriteLine("MaterialEmission: " + entry.materialemission[0] + " " + entry.materialemission[1] + " " + entry.materialemission[2]);
 			}
 		}
 	}
