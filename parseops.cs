@@ -7,7 +7,7 @@ using System.Text;
 
 namespace OpsParser
 {
-	class OpsInfo
+	public class OpsInfo
 	{
 		public OpsInfo()
 		{
@@ -211,7 +211,7 @@ namespace OpsParser
 			fn = fn.ToLower();
 			ops_info.preferredasset2 = fn;
 		}
-		static void read_xml(string filename, LinkedList<OpsInfo> ops_list)
+		public static void read_xml(string filename, LinkedList<OpsInfo> ops_list)
 		{
 			var xml_doc = new XmlDocument();
 			xml_doc.Load(filename);
@@ -235,9 +235,11 @@ namespace OpsParser
 						parse_commadouble(attr["materialEmission"].InnerText, opsInfo.materialemission);
 						// reverse X position
 						opsInfo.pos[0] = -opsInfo.pos[0];
-						// reverse Y rotation
-						opsInfo.rot[1] = -opsInfo.rot[1];
 						arr_rad_to_quat(opsInfo.rot);
+						// reverse X rotation (quat)
+						opsInfo.rot[1] = -opsInfo.rot[1];
+						// reverse Y rotation (quat)
+						opsInfo.rot[2] = -opsInfo.rot[2];
 						process_asset_xml(opsInfo);
 						ops_list.AddLast(opsInfo);
 					}
@@ -245,7 +247,7 @@ namespace OpsParser
 				}
 			}
 		}
-		static void read_plt(string filename, LinkedList<OpsInfo> ops_list)
+		public static void read_plt(string filename, LinkedList<OpsInfo> ops_list)
 		{
 			using (var reader = new BinaryReader(File.Open(filename, FileMode.Open)))
 			{
@@ -331,6 +333,10 @@ namespace OpsParser
 						}
 						// reverse X position
 						opsInfo.pos[0] = -opsInfo.pos[0];
+						// reverse X rotation (quat)
+						opsInfo.rot[1] = -opsInfo.rot[1];
+						// reverse Y rotation (quat)
+						opsInfo.rot[2] = -opsInfo.rot[2];
 						process_asset_xml(opsInfo);
 						ops_list.AddLast(opsInfo);
 					}
@@ -350,7 +356,7 @@ namespace OpsParser
 			fn = fn.ToLower();
 			ops_info.preferredasset2 = fn;
 		}
-		static void read_ed6(string filename, LinkedList<OpsInfo> ops_list, bool is_ed6_3)
+		public static void read_ed6(string filename, LinkedList<OpsInfo> ops_list, bool is_ed6_3)
 		{
 			var opslength = 312;
 			if (is_ed6_3)
