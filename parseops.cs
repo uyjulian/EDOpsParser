@@ -238,8 +238,6 @@ namespace OpsParser
 						arr_rad_to_quat(opsInfo.rot);
 						// reverse X rotation (quat)
 						opsInfo.rot[1] = -opsInfo.rot[1];
-						// reverse Y rotation (quat)
-						opsInfo.rot[2] = -opsInfo.rot[2];
 						process_asset_xml(opsInfo);
 						ops_list.AddLast(opsInfo);
 					}
@@ -335,8 +333,6 @@ namespace OpsParser
 						opsInfo.pos[0] = -opsInfo.pos[0];
 						// reverse X rotation (quat)
 						opsInfo.rot[1] = -opsInfo.rot[1];
-						// reverse Y rotation (quat)
-						opsInfo.rot[2] = -opsInfo.rot[2];
 						process_asset_xml(opsInfo);
 						ops_list.AddLast(opsInfo);
 					}
