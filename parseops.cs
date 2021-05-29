@@ -100,6 +100,7 @@ namespace OpsParser
 			String fn = ops_info.asset;
 			ops_info.preferredasset1 = fn;
 			// special exceptions
+			// TODO: add special exceptions for ED85
 			if (fn == "O_C03TBL00")
 			{
 				ops_info.preferredasset2 = "c0tbl00";
