@@ -4,8 +4,12 @@ import functools
 import itertools
 import array
 import math
+import os
 
 import xml.etree.ElementTree as ET
+
+global opsPrefabFolder
+opsPrefabFolder = ""
 
 class OpsInfo:
 	def __init__(self):
@@ -187,7 +191,7 @@ def read_ed6(f):
 
 for arg in sys.argv[1:]:
 	with open(arg, "rb") as f:
-		print("FILE: " + arg)
+		#print("FILE: " + arg)
 		ident, = struct.unpack("I", f.read(4))
 		f.seek(0)
 		is_xml = ident == 0x3CBFBBEF
@@ -200,14 +204,23 @@ for arg in sys.argv[1:]:
 			read_plt(f)
 		else:
 			read_ed6(f)
-		for entry in lst:
-			print("Asset: " + entry.asset)
-			print("Name: " + entry.name)
-			print("Prefname1: " + entry.preferredasset1)
-			print("Prefname2: " + entry.preferredasset2)
-			print("Position: " + str(entry.pos[0]) + " " + str(entry.pos[1]) + " " + str(entry.pos[2]))
-			print("Rotation: " + str(entry.rot[0]) + " " + str(entry.rot[1]) + " " + str(entry.rot[2]) + " " + str(entry.rot[3]))
-			print("Scale: " + str(entry.scl[0]) + " " + str(entry.scl[1]) + " " + str(entry.scl[2]))
-			print("MaterialDiffuse: " + str(entry.materialdiffuse[0]) + " " + str(entry.materialdiffuse[1]) + " " + str(entry.materialdiffuse[2]) + " " + str(entry.materialdiffuse[3]))
-			print("MaterialEmission: " + str(entry.materialemission[0]) + " " + str(entry.materialemission[1]) + " " + str(entry.materialemission[2]))
+		if False:
+			for entry in lst:
+				print("Asset: " + entry.asset)
+				print("Name: " + entry.name)
+				print("Prefname1: " + entry.preferredasset1)
+				print("Prefname2: " + entry.preferredasset2)
+				print("Position: " + str(entry.pos[0]) + " " + str(entry.pos[1]) + " " + str(entry.pos[2]))
+				print("Rotation: " + str(entry.rot[0]) + " " + str(entry.rot[1]) + " " + str(entry.rot[2]) + " " + str(entry.rot[3]))
+				print("Scale: " + str(entry.scl[0]) + " " + str(entry.scl[1]) + " " + str(entry.scl[2]))
+				print("MaterialDiffuse: " + str(entry.materialdiffuse[0]) + " " + str(entry.materialdiffuse[1]) + " " + str(entry.materialdiffuse[2]) + " " + str(entry.materialdiffuse[3]))
+				print("MaterialEmission: " + str(entry.materialemission[0]) + " " + str(entry.materialemission[1]) + " " + str(entry.materialemission[2]))
+		else:
+			entries_deduped = {}
+			for entry in lst:
+				entries_deduped[entry.asset] = True
+			with open(arg + ".sorted.txt", "w") as wf:
+				for x in sorted(entries_deduped.keys()):
+					if opsPrefabFolder == "" or (not os.path.isfile(opsPrefabFolder + "/" + x + ".prefab")):
+						wf.write(x + "\n")
 
