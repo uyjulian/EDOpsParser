@@ -2,6 +2,10 @@
 
 Ops file parser written in C#.  
 
+## Modding help and resources
+
+See [Trails Research Group](https://github.com/Trails-Research-Group) for more resources to assist in modding the game.  
+
 ## Usage
 
 Pass the path to the file to be used on the command line.  
