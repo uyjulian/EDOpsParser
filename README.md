@@ -2,11 +2,11 @@
 
 Ops file parser written in C#.  
 
-# Usage
+## Usage
 
 Pass the path to the file to be used on the command line.  
 The information contained in the specified file will be printed to the standard output.  
 
-# License
+## License
 
 The license is MIT license. Please read `LICENSE` for more information.  
