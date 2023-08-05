@@ -66,6 +66,80 @@ def arr_deg(a):
 	for i in range(len(a)):
 		a[i] = (a[i] / (2 * math.pi)) * 360
 
+def arr_quat_to_mat3(m, q):
+	sqrt2 = math.sqrt(2)
+	q0 = sqrt2 * q[0]
+	q1 = sqrt2 * q[1]
+	q2 = sqrt2 * q[2]
+	q3 = sqrt2 * q[3]
+
+	qda = q0 * q1
+	qdb = q0 * q2
+	qdc = q0 * q3
+	qaa = q1 * q1
+	qab = q1 * q2
+	qac = q1 * q3
+	qbb = q2 * q2
+	qbc = q2 * q3
+	qcc = q3 * q3
+
+	m[(0 * 3) + 0] = 1.0 - qbb - qcc
+	m[(0 * 3) + 1] = qdc + qab
+	m[(0 * 3) + 2] = -qdb + qac
+
+	m[(1 * 3) + 0] = -qdc + qab
+	m[(1 * 3) + 1] = 1.0 - qaa - qcc
+	m[(1 * 3) + 2] = qda + qbc
+
+	m[(2 * 3) + 0] = qdb + qac
+	m[(2 * 3) + 1] = -qda + qbc
+	m[(2 * 3) + 2] = 1.0 - qaa - qbb
+
+def arr_mat3_normalized_to_eul2(mat, eul1, eul2):
+	cy = math.hypot(mat[(0 * 3) + 0], mat[(0 * 3) + 1])
+
+	epsilon = 1.192092896e-07
+	if cy > 16.0 * epsilon:
+
+		eul1[0] = math.atan2(mat[(1 * 3) + 2], mat[(2 * 3) + 2])
+		eul1[1] = math.atan2(-mat[(0 * 3) + 2], cy)
+		eul1[2] = math.atan2(mat[(0 * 3) + 1], mat[(0 * 3) + 0])
+
+		eul2[0] = math.atan2(-mat[(1 * 3) + 2], -mat[(2 * 3) + 2])
+		eul2[1] = math.atan2(-mat[(0 * 3) + 2], -cy)
+		eul2[2] = math.atan2(-mat[(0 * 3) + 1], -mat[(0 * 3) + 0])
+	else:
+		eul1[0] = math.atan2(-mat[(2 * 3) + 1], mat[(1 * 3) + 1])
+		eul1[1] = math.atan2(-mat[(0 * 3) + 2], cy)
+		eul1[2] = 0.0
+
+		eul2[0] = eul1[0]
+		eul2[1] = eul1[1]
+		eul2[2] = eul1[2]
+
+def arr_mat3_normalized_to_eul(eul, mat):
+	eul1 = [0.0, 0.0, 0.0]
+	eul2 = [0.0, 0.0, 0.0]
+
+	arr_mat3_normalized_to_eul2(mat, eul1, eul2)
+
+	# return best, which is just the one with lowest values it in
+	if (math.fabs(eul1[0]) + math.fabs(eul1[1]) + math.fabs(eul1[2])) > (math.fabs(eul2[0]) + math.fabs(eul2[1]) + math.fabs(eul2[2])):
+		eul[0] = eul2[0]
+		eul[1] = eul2[1]
+		eul[2] = eul2[2]
+	else:
+		eul[0] = eul1[0]
+		eul[1] = eul1[1]
+		eul[2] = eul1[2]
+
+def arr_quat_to_rad(a):
+	unit_mat = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+	arr_quat_to_mat3(unit_mat, a)
+	if len(a) == 4:
+		del a[-1]
+	arr_mat3_normalized_to_eul(a, unit_mat)
+
 def process_asset_xml(ops_info):
 	fn = ops_info.asset
 	ops_info.preferredasset1 = fn
