@@ -144,8 +144,7 @@ def process_asset_xml(ops_info):
 	fn = ops_info.asset
 	ops_info.preferredasset1 = fn
 	# special exceptions
-	# TODO: add special exceptions for ED85
-	if fn == "O_#3TBL00":
+	if fn == "O_C03TBL00":
 		ops_info.preferredasset2 = "c0tbl00"
 		return
 	if fn == "O_C03TBL01":
@@ -186,6 +185,27 @@ def process_asset_xml(ops_info):
 		return
 	if fn == "O_S61KMO46":
 		ops_info.preferredasset2 = "s61kag46"
+		return
+	if fn == "O_T00EVT61":
+		ops_info.preferredasset2 = "t00ev61"
+		return
+	if fn == "O_T03EVT00":
+		ops_info.preferredasset2 = "t02evt00"
+		return
+	if fn == "O_T10TIG03":
+		ops_info.preferredasset2 = "t10lig03"
+		return
+	if fn == "O_T40KMO01":
+		ops_info.preferredasset2 = "t40lmo01"
+		return
+	if fn == "O_T50KMO01H":
+		ops_info.preferredasset2 = "t50kag01h"
+		return
+	if fn == "O_TESTRIGD":
+		ops_info.preferredasset2 = "rigidtest"
+		return
+	if fn == "O_V03TRN02":
+		ops_info.preferredasset2 = "v03tm02"
 		return
 	# chop off O
 	fn = fn[2:]
