@@ -209,9 +209,13 @@ def read_xml(f):
 					ops_info.scl = parse_commadouble(attr["scl"])
 					ops_info.materialdiffuse = parse_commadouble(attr["materialDiffuse"])
 					ops_info.materialemission = parse_commadouble(attr["materialEmission"])
+					# reverse X position
 					ops_info.pos[0] = -ops_info.pos[0]
-					arr_rad_to_quat(ops_info.rot)
+					# subtract 90 rotation (radian)
+					ops_info.rot[0] -= (math.pi * 2) / 4
+					# reverse Y rotation (radian)
 					ops_info.rot[1] = -ops_info.rot[1]
+					arr_rad_to_quat(ops_info.rot)
 					process_asset_xml(ops_info)
 					lst.append(ops_info)
 	return lst
