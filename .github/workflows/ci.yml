@@ -25,7 +25,7 @@ jobs:
       image: ubuntu:20.04
       options: "--user 0"
     steps:
-      - run: "apt-get -y update && apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' install mono-mcs"
+      - run: "apt-get -y update && apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' install mono-mcs git"
       - uses: actions/checkout@v4
         with:
           submodules: recursive
